@@ -1,5 +1,49 @@
 # CHANGELOG
 
+## 4.16.9 &mdash; 2025-02-13
+* [Android] Re-compile library with jdk 17
+
+## 4.16.8 &mdash; 2025-02-13
+* [Android] Re-compile library with jdk 17 instead of 22
+
+## 4.16.7 &mdash; 2025-02-13
+* [Android] Fix `ConcurrentModificationException` in `StopTimeoutEvaluator`.
+
+## 4.16.6 &mdash; 2024-12-19
+* [Android] Address phenonenon of "UI Freezing".
+
+## 4.16.5 &mdash; 2024-12-03
+* [Android] Remove Android Setup Step for `proguard-rules.pro` in your `android/app/build.gradle`.  The SDK is now able to automatically apply its required `proguard-rules.pro`.
+
+## 4.16.4 &mdash; 2024-11-12
+* [Android] Remove enforcement of minimum Geofence radius `150`
+* [Android] Fix issue with `TSLocationManagerActivity` (responsible for showing location permission / authorization dialogs).  Minimizing the app with an active permission dialog would cause the app's `MainActivity` to terminate on some devices.
+
+## 4.16.3 &mdash; 2024-11-08
+* [Android] Fix reported "screen flickering" issue on some devices when SDK requests permissions.
+* [Android] Address Android synchronization issue with `TSLocation.toMap`.
+* [iOS] Address crash in `TSConfig` due to "uncaught exception NSInvalidArgumentException"
+* [Android] Change `foregroundServiceType` on `LocationRequestService` from `shortService` -> `location`.
+* [iOS] Address inconsistent location-tracking performance on iOS.
+
+## 4.16.2 &mdash; 2024-10-23
+* [iOS] Fix bug with `triggerActivites` preventing motion-triggering in iOS simulator with simulated location.
+
+## 4.16.1 &mdash; 2024-10-21
+* [Android] Implement `Service.onTimeout` to handle `foregroundServiceType="shortService"` timeouts.
+* [iOS] Add new `Config.activityType` `ACTIVITY_TYPE_AIRBORNE`.
+* [iOS] Implement `Config.triggerActivities` for iOS.
+* [Android] Guard against `NullPointerException` receiving a null location in `PolygonGeofenceService` event.
+* [Android] Remove unused `import`s related to Flutter V1 Embedding.
+* [Android] Address possible leak of `Activity` reference when terminating the app.  Ensure internal reference to `Activity` is nullified when app is terminated.
+* [Android] Add improvements to Android geofencing-only mode with `goefenceModeHighAccuracy: true` where motion-activity updates disabled.
+* [Android] Add error-checking in polygon-geofencing to handle a possible `NullPointerException`.
+* [iOS] Fix broken linking to Settings screen in `locationAuthorizationAlert` on iOS 18.
+
+## 4.16.0 &mdash; 2024-09-04
+* [iOS] Fix bug in iOS *Polygon Geofencing* when running in geofences-only mode (`.startGeofences`).  iOS would mistakenly turn off location updates exactly 3 samples into the containing circular geofence of a polygon.
+* Implement `notifyOnDwell` for polygon-geofences.
+
 ## 4.15.5 &mdash; 2024-06-12
 * [Android] Remove permission `FOREGROUND_SERVICE_HEALTH`.  It turns out that this permission is no longer required when the `ActivityRecognitionServivce` is defined with a `foregroundServiceType="shortservice"`, which allows a background-launched foreground-service to stay active for up to 3 minutes, which is sufficient for the `ActivityRecognitionService`, which typically stays activated only for a few milliseconds.
 

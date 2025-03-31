@@ -4,7 +4,7 @@
 
 Flutter seems to have a problem with 3rd-party Android libraries which merge their own `AndroidManifest.xml` into the application, particularly the `android:label` attribute.
 
-##### :open_file_folder: `android/app/src/main/AndroidManifest.xml`:
+### :open_file_folder: `android/app/src/main/AndroidManifest.xml`:
 
 ```diff
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,20 +20,29 @@ Flutter seems to have a problem with 3rd-party Android libraries which merge the
 
 ```
 
-##### :warning: Failure to perform the step above will result in a **build error**
-
-```
-Execution failed for task ':app:processDebugManifest'.
-> Manifest merger failed : Attribute application@label value=(hello_world) from AndroidManifest.xml:17:9-36
-    is also present at [tslocationmanager-2.13.3.aar] AndroidManifest.xml:24:18-50 value=(@string/app_name).
-    Suggestion: add 'tools:replace="android:label"' to <application> element at AndroidManifest.xml:15:5-38:19 to override.
-```
+> [!WARNING]
+> Failure to perform the step above will result in a **build error**: __`Manifest merger failed`__
 
 
-## :open_file_folder: `android/build.gradle`
-- Add the following **required** `maven` repo urls:
+## :open_file_folder: `android/build.gradle` (or `build.gradle.kts`)
+
+> [!NOTE]
+> At the root of your `/android` folder, your Flutter app will contain __one__ of the following files:
+> - __`build.gradle`__
+> - __`build.gradle.kts`__ (new Kotlin-based version)
+>
+> Add the following **required** `maven` repo url to **whichever file** your app has:
+
+### `build.gradle`
+
+If your app contains an `android/build.gradle`:
 
 ```diff
++ext {
++    appCompatVersion    = "1.4.2"           // or higher / as desired
++    playServicesLocationVersion = "21.3.0"  // or higher / as desired
++}
+
 allprojects {  // <-- IMPORTANT:  allprojects
     repositories {
         google()
@@ -47,37 +56,33 @@ allprojects {  // <-- IMPORTANT:  allprojects
 }
 ```
 
-- #### If you're using `flutter >= 3.19.0` ([New Android Architecture](https://docs.flutter.dev/release/breaking-changes/flutter-gradle-plugin-apply)):
+### `build.gradle.kts`
+
+OR if your app contains an `android/build.gradle.kts`:
 
 ```diff
-+ext {
-+    compileSdkVersion   = 33                // or higher / as desired
-+    targetSdkVersion    = 33                // or higher / as desired
-+    minSdkVersion       = 21                // Required minimum
-+    appCompatVersion    = "1.4.2"           // or higher / as desired
-+    playServicesLocationVersion = "21.0.1"  // or higher / as desired
-+}
-```
-
-- #### Otherwise for `flutter < 3.19.0` (Old Android Architecture):
-
-```diff
-
-buildscript {
-    ext.kotlin_version = '1.3.0' // Must use 1.3.0 OR HIGHER
+allprojects {
 +   ext {
-+       compileSdkVersion   = 33                // or higher / as desired
-+       targetSdkVersion    = 33                // or higher / as desired
-+       minSdkVersion       = 21                // Required minimum
-+       appCompatVersion    = "1.4.2"           // or higher / as desired
-+       playServicesLocationVersion = "21.0.1"  // or higher / as desired
++       set("appCompatVersion", "1.4.2")             // or higher / as desired
++       set("playServicesLocationVersion", "21.3.0") // or higher / as desired
 +   }
+    repositories {
+        google()
+        mavenCentral()
++       // [required] background_geolocation
++       maven(url = "${project(":flutter_background_geolocation").projectDir}/libs")
++       maven(url = "https://developer.huawei.com/repo/")
++       // [required] background_fetch
++       maven(url = "${project(":background_fetch").projectDir}/libs")
+    }
 }
 ```
 
-## :open_file_folder: `android/app/build.gradle`
+## :open_file_folder: `android/app/build.gradle` (or `build.gradle.kts`)
 
-:exclamation: __DO NOT OMIT ANY OF THE FOLLOWING CHANGES__ :exclamation:
+### `build.gradle`
+
+If your app contains an `android/app/build.gradle`:
 
 ```diff
 // flutter_background_geolocation
@@ -85,26 +90,40 @@ buildscript {
 +apply from: "${background_geolocation.projectDir}/background_geolocation.gradle"
 
 android {
-+   compileSdkVersion rootProject.ext.compileSdkVersion
     .
     .
     .
-    defaultConfig {
-        .
-        .
-        .
-+       minSdkVersion rootProject.ext.minSdkVersion
-+       targetSdkVersion rootProject.ext.targetSdkVersion
-    }
     buildTypes {
         release {
             .
             .
             .
             minifyEnabled true
-+           shrinkResources false
-            // background_geolocation requires custom Proguard Rules with minifyEnabled
-+           proguardFiles "${background_geolocation.projectDir}/proguard-rules.pro"
++           shrinkResources false   // <-- REQUIRED !!!
+        }
+    }
+}
+```
+
+### `build.gradle.kts`
+
+OR if your app contains an `android/app/build.gradle.kts`:
+
+```diff
++val backgroundGeolocation = project(":flutter_background_geolocation")
++apply { from("${backgroundGeolocation.projectDir}/background_geolocation.gradle") }
+
+android {
+    .
+    .
+    .
+    buildTypes {
+        release {
+            .
+            .
+            .
+            isMinifyEnabled = true
++           isShrinkResources = false   // <-- REQUIRED !!!
         }
     }
 }
@@ -151,7 +170,9 @@ If you've [purchased an *HMS Background Geolocation* License](https://shop.trans
   </application>
 </manifest>
 ```
-:warning: Huawei HMS support requires `flutter_background_geolocation >= 3.10.0`.
+
+> [!WARNING]
+> Huawei HMS support requires __`flutter_background_geolocation >= 3.10.0`__.
 
 
 ### Polygon Geofencing Add-on
@@ -188,7 +209,8 @@ The plugin uses __`AlarmManager`__ "exact alarms" for precise scheduling of even
       .
   </manifest>
 ```
-:warning: It has been announced that *Google Play Store* [has plans to impose greater scrutiny](https://support.google.com/googleplay/android-developer/answer/13161072?sjid=3640341614632608469-NA) over usage of this permission (which is why the plugin does not automatically add it).
+> [!WARNING]
+> It has been announced that *Google Play Store* [has plans to impose greater scrutiny](https://support.google.com/googleplay/android-developer/answer/13161072?sjid=3640341614632608469-NA) over usage of this permission (which is why the plugin does not automatically add it).
 
 ## Android Headless Mode with `enableHeadless: true`
 
@@ -203,4 +225,24 @@ BackgroundGeolocation.ready(Config(
 ## `background_fetch`
 
 `flutter_background_geolocation` installs a dependency `background_fetch` (also created by [Transistor Software](https://www.transistorsoft.com)).  You can optionally perform the [Android Setup](https://github.com/transistorsoft/flutter_background_fetch/blob/master/help/INSTALL-ANDROID.md) for it as well.
+
+> [!TIP]
+> `background_fetch` is helpful for executing a periodic task (eg: every 15 minutes).  You could use `background_fetch` to periodically request the current location:
+
+```dart
+// Execute a task about every 15 minutes:
+BackgroundFetch.configure(BackgroundFetchConfig(
+  minimumFetchInterval: 15
+), (String taskId) async { // <-- This is your periodic-task callback  
+  var location = await BackgroundGeolocation.getCurrentPosition(
+    samples: 3,
+    extras: {   // <-- your own arbitrary meta-data
+      "event": "getCurrentPosition"
+    }
+  );
+  print('[getCurrentPosition] $location');
+  BackgroundFetch.finish(taskId);   // <-- signal that your task is complete
+})
+```
+
 

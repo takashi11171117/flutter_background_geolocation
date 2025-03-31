@@ -69,27 +69,10 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print("[home_view didChangeAppLifecycleState] : $state");
     if (state == AppLifecycleState.paused) {
-
-      // Do nothing.
-      /* For testing location access in background on Android 12.
-      new Timer(Duration(seconds: 21), () async {
-        var location = await bg.BackgroundGeolocation.getCurrentPosition();
-        print("************ [location] $location");
-      });
-      */
-
+      // paused.  do nothing.
     } else if (state == AppLifecycleState.resumed) {
+      // resumed.  do nothing.
       if (!_enabled!) return;
-
-      DateTime now = DateTime.now();
-      var _lastRequestedTemporaryFullAccuracy = this._lastRequestedTemporaryFullAccuracy;
-      if (_lastRequestedTemporaryFullAccuracy != null) {
-        Duration dt = _lastRequestedTemporaryFullAccuracy.difference(now);
-        if (dt.inSeconds < 10) return;
-      }
-      _lastRequestedTemporaryFullAccuracy = now;
-      bg.BackgroundGeolocation.requestTemporaryFullAccuracy("DemoPurpose");
-
     }
   }
 
@@ -123,7 +106,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
     bg.BackgroundGeolocation.onNotificationAction(_onNotificationAction);
 
     bg.BackgroundGeolocation.onAuthorization((bg.AuthorizationEvent event) {
-      print("********************** Authorization: $event");
+      print("[onAuthorization] $event");
     });
 
     bg.TransistorAuthorizationToken token = await bg.TransistorAuthorizationToken.findOrCreate(orgname, username, ENV.TRACKER_HOST);
@@ -211,6 +194,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
               maximumAge: 1000 * 10,  // 30 seconds ago
               timeout: 30,
               desiredAccuracy: 40,
+              persist: true,
               extras: {
                 "event": "background-fetch",
                 "headless": false
@@ -289,7 +273,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
         timeout: 30,         // <-- wait 30s before giving up.
         samples: 3,           // <-- sample just 1 location
         extras: {"getCurrentPosition": true}
-    ).then((bg.Location location) {
+    ).then((bg.Location location) async {
       print('[getCurrentPosition] - $location');
     }).catchError((error) {
       print('[getCurrentPosition] ERROR: $error');
@@ -343,7 +327,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin<HomeVi
 
   void _onProviderChange(bg.ProviderChangeEvent event) async {
     print('[${bg.Event.PROVIDERCHANGE}] - $event');
-    
+
     if ((event.status == bg.ProviderChangeEvent.AUTHORIZATION_STATUS_ALWAYS) && (event.accuracyAuthorization == bg.ProviderChangeEvent.ACCURACY_AUTHORIZATION_REDUCED)) {
       // Supply "Purpose" key from Info.plist as 1st argument.
       bg.BackgroundGeolocation.requestTemporaryFullAccuracy("DemoPurpose").then((int accuracyAuthorization) {

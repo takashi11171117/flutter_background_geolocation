@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## 4.18.2 &mdash; 2025-11-29
+* [Android] Rebuild with Android ELF Alignment
+
+## 4.18.1 &mdash; 2025-11-08
+* [Android] pin `tslocationmanager` at `3.+` in preparation for next release..
+
+## 4.18.0 &mdash; 2025-09-08
+* [Android] Remove Huawei HMS support for failure to provide their SDKs with *Android 16KB Page Size* compatibility.
+
+## 4.17.1 &mdash; 2025-08-25
+* Fix example/pubspec.yaml `enable-swift-package-manager: true`
+
+## 4.17.0 &mdash; 2025-07-28
+* [iOS] Implement Swift Package Manager support
+* [example] Re-factor /example app's location marker images.
+
+## 4.16.12 &mdash; 2025-07-07
+* [Android] Rebuild `tslocationmanager` with AGP >= 8.5.1
+* [example] Update example's `flutter_map` to latest `8.1.1`
+* [Android] Implement behaviour for `locationAuthorizationRequest: "Any"` to not continue showing `backgroundPermissionRationale` after user clicks `[CANCEL]` button.
+
+## 4.16.11 &mdash; 2025-06-16
+* [Android] Fix issue with polygon geofencing where `identifier` consists of long strings, such as `aaaa-bbbb-cccccccc-dddd-eeeee
+eeeeeee`.
+* [Android] Fix edge-case where polygons can fail to fire after the containing geofence is exited.  This could happen if the containing geofence was exited without trigger an onMotionChange event.
+* [iOS] Fix edge-case where polygon could fail to fire EXIT event after launching from terminated state when the containing geofence is exit causes background app restart.
+
+## 4.16.10 &mdash; 2025-05-16
+* [Android] Support *16KB pages sizes*.
+* [iOS] Fix `ProviderChangeEvent.enabled` not showing the result of global *Privacy -> Location Services -> Enabled* switch
+* [Android] Fix `java.util.ConcurrentModificationException at com.transistorsoft.locationmanager.location.SingleLocationRequest.getBestLocation`.
+
 ## 4.16.9 &mdash; 2025-02-13
 * [Android] Re-compile library with jdk 17
 
